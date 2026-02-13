@@ -7,10 +7,98 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
+fn get_config_path() -> PathBuf {
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    PathBuf::from(home).join(".config").join("struct").join("ignores.txt")
+}
+
+fn load_config_patterns() -> Vec<String> {
+    let config_path = get_config_path();
+    if let Ok(content) = fs::read_to_string(&config_path) {
+        content.lines()
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty() && !s.starts_with('#'))
+            .collect()
+    } else {
+        Vec::new()
+    }
+}
+
+fn save_config_patterns(patterns: &[String]) -> std::io::Result<()> {
+    let config_path = get_config_path();
+    if let Some(parent) = config_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(&config_path, patterns.join("\n"))
+}
+
+fn add_config_pattern(pattern: String) {
+    let mut patterns = load_config_patterns();
+    if patterns.contains(&pattern) {
+        println!("{} already in config", pattern.yellow());
+        return;
+    }
+    patterns.push(pattern.clone());
+    if let Err(e) = save_config_patterns(&patterns) {
+        eprintln!("failed to save config: {}", e);
+        return;
+    }
+    println!("{} added to config", pattern.green());
+    println!("config file: {}", get_config_path().display().to_string().bright_black());
+}
+
+fn remove_config_pattern(pattern: String) {
+    let mut patterns = load_config_patterns();
+    let before_len = patterns.len();
+    patterns.retain(|p| p != &pattern);
+    
+    if patterns.len() == before_len {
+        println!("{} not found in config", pattern.yellow());
+        return;
+    }
+    
+    if let Err(e) = save_config_patterns(&patterns) {
+        eprintln!("failed to save config: {}", e);
+        return;
+    }
+    println!("{} removed from config", pattern.red());
+}
+
+fn list_config_patterns() {
+    let patterns = load_config_patterns();
+    if patterns.is_empty() {
+        println!("no custom patterns configured");
+        println!("add some with: struct add \"pattern\"");
+        return;
+    }
+    
+    println!("{}", "custom ignore patterns:".bright_black());
+    for pattern in patterns {
+        println!("  {}", pattern.cyan());
+    }
+    println!("\nconfig file: {}", get_config_path().display().to_string().bright_black());
+}
+
+fn clear_config_patterns() {
+    let config_path = get_config_path();
+    if config_path.exists() {
+        if let Err(e) = fs::remove_file(&config_path) {
+            eprintln!("failed to clear config: {}", e);
+            return;
+        }
+        println!("{}", "cleared all custom patterns".green());
+    } else {
+        println!("no config file to clear");
+    }
+}
+
 #[derive(Parser, Debug)]
 #[command(name = "struct")]
 #[command(about = "A smarter tree command with intelligent defaults", long_about = None)]
 struct Args {
+    #[command(subcommand)]
+    command: Option<Commands>,
+
     /// Maximum depth to display (like tree -L)
     #[arg(value_name = "DEPTH")]
     depth: Option<usize>,
@@ -32,6 +120,24 @@ struct Args {
     path: PathBuf,
 }
 
+#[derive(clap::Subcommand, Debug)]
+enum Commands {
+    /// Add a pattern to the config file
+    Add {
+        /// Pattern to add (e.g., "cache", "*.log")
+        pattern: String,
+    },
+    /// Remove a pattern from the config file
+    Remove {
+        /// Pattern to remove
+        pattern: String,
+    },
+    /// List all custom ignore patterns
+    List,
+    /// Clear all custom ignore patterns
+    Clear,
+}
+
 struct StructConfig {
     depth: usize,
     custom_ignores: Vec<Regex>,
@@ -42,11 +148,46 @@ struct StructConfig {
 fn main() {
     let args = Args::parse();
 
+    // Handle subcommands
+    if let Some(command) = args.command {
+        match command {
+            Commands::Add { pattern } => {
+                add_config_pattern(pattern);
+                return;
+            }
+            Commands::Remove { pattern } => {
+                remove_config_pattern(pattern);
+                return;
+            }
+            Commands::List => {
+                list_config_patterns();
+                return;
+            }
+            Commands::Clear => {
+                clear_config_patterns();
+                return;
+            }
+        }
+    }
+
     let depth = args.depth.unwrap_or(3);
     let max_size_bytes = args.max_size_mb.map(|mb| mb * 1024 * 1024);
 
-    // Parse custom ignore patterns
+    // Load config patterns
+    let config_patterns = load_config_patterns();
+
+    // Parse custom ignore patterns (from -i flag)
     let mut custom_ignores = Vec::new();
+    
+    // Add config file patterns
+    for pattern in config_patterns {
+        let pattern = pattern.replace("*", ".*");
+        if let Ok(re) = Regex::new(&format!("^{}$", pattern)) {
+            custom_ignores.push(re);
+        }
+    }
+    
+    // Add command-line patterns
     if let Some(patterns) = args.ignore_patterns {
         for pattern in patterns.split(',') {
             let pattern = pattern.trim().replace("*", ".*");
@@ -103,9 +244,12 @@ fn should_ignore_dir(name: &str) -> bool {
         "venv" | ".venv" | "env" | ".env" | "virtualenv" |
         "node_modules" | ".npm" | ".yarn" |
         ".git" | ".svn" | ".hg" |
-        ".vscode" | ".idea" |
+        ".vscode" | ".idea" | ".obsidian" |
         "target" | "bin" | "obj" | ".next" | ".nuxt" |
-        ".DS_Store"
+        ".DS_Store" |
+        "chrome_profile" | "lofi_chrome_profile" |
+        "GPUCache" | "ShaderCache" | "GrShaderCache" |
+        "Cache" | "blob_storage"
     ) || name.ends_with(".egg-info")
 }
 

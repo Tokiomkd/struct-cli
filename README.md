@@ -1,13 +1,12 @@
 # struct
 
-i got tired of `tree` showing me 3000 files inside `node_modules` and `venv` every single time, so i made this.
+A Rust-based tree alternative that actually respects your sanity.
 
-## what it does
+## The Problem
 
-it's basically `tree` but it doesn't spam your terminal with garbage you don't care about.
+Running `tree` in a project directory gives you this:
 
 ```bash
-# instead of this nightmare:
 $ tree -L 3
 venv/
 ├── lib/
@@ -15,56 +14,81 @@ venv/
 │   │   ├── site-packages/
 │   │   │   ├── pip/
 │   │   │   │   ├── __init__.py
-│   │   │   │   ├── (2000 MORE FILES YOU DON'T CARE ABOUT)
-
-# you get this:
-$ struct 3
-venv/ (2741 files ignored)
+│   │   │   │   ├── ... (2000+ files you didn't ask for)
 ```
 
-way better.
+I needed something that shows project structure without drowning me in dependency folders.
 
-## install
+## What This Does
+
+`struct` shows your project's actual structure while automatically hiding the noise:
+
+```bash
+$ struct 3
+venv/ (2741 files ignored)
+src/
+├── main.rs
+└── lib.rs
+```
+
+The folder still appears, but you get a clean file count instead of thousands of irrelevant paths.
+
+## Installation
 
 ```bash
 cargo build --release
 sudo cp target/release/struct /usr/local/bin/
 ```
 
-## usage
+## Usage
 
 ```bash
-struct 3              # depth 3 (like tree -L 3)
-struct -g 2           # only git-tracked files
-struct -s 100 3       # skip folders bigger than 100MB
-struct -i "*.log" 2   # custom ignores
+struct 3              # Show structure up to depth 3
+struct -g 2           # Git-tracked files only
+struct -s 100 3       # Skip folders larger than 100MB
+struct -i "*.log" 2   # Add custom ignore patterns
 ```
 
-## what gets auto-ignored
+### Config File
 
-the usual suspects:
-- `venv`, `node_modules` (shows folder but not the 10000 files inside)
-- `__pycache__`, `.git`, `target`
-- `.vscode`, `.idea`
-- `chrome_profile` and other cache garbage
-- basically anything that clutters your output
+Save patterns permanently instead of retyping them:
 
-folders still show up, you just see `venv/ (2741 files ignored)` instead of everything exploding.
+```bash
+struct add "chrome_profile"     # Add to permanent ignores
+struct add "*.log"              # Wildcards supported
+struct list                     # View saved patterns
+struct remove "cache"           # Remove specific pattern
+struct clear                    # Reset config
+```
 
-## why rust
+Config is stored in `~/.config/struct/ignores.txt`
 
-i wanted to learn rust and this seemed like a good starter project. also it's fast.
+## Auto-Ignored Directories
 
-## stuff it does
+Common bloat folders are hidden by default:
+- Python: `venv`, `__pycache__`, `dist`, `build`, `.pytest_cache`
+- Node: `node_modules`, `.npm`, `.yarn`
+- Version Control: `.git`, `.svn`, `.hg`
+- IDEs: `.vscode`, `.idea`, `.obsidian`
+- Build artifacts: `target`, `bin`, `obj`
+- Caches: `chrome_profile`, `GPUCache`, `ShaderCache`
 
-- colors: blue folders, green executables
-- file counts next to ignored dirs
-- git mode to see only tracked files
-- size limits to skip massive folders
-- custom ignore patterns
+## Features
 
-that's it. it's just `tree` but less annoying.
+- **Color-coded output**: Directories in blue, executables in green
+- **File counts**: Shows how many files are being hidden
+- **Git integration**: Filter to only git-tracked files
+- **Size awareness**: Skip folders over a certain size
+- **Configurable**: Save your ignore patterns permanently
 
----
+## Why Rust
 
-if you find bugs or want features, open an issue or whatever
+This started as a learning project to get hands-on with Rust. Turned out to be genuinely useful, so I polished it up. The performance is a nice bonus.
+
+## Contributing
+
+Found a bug? Want a feature? Open an issue. PRs welcome.
+
+## License
+
+MIT
