@@ -43,12 +43,18 @@ sudo cp target/release/struct /usr/local/bin/
 ## Usage
 
 ```bash
-struct 3              # Show structure up to depth 3
-struct 0              # Show everything (infinite depth)
-struct -z 2           # Show file sizes
-struct -g 2           # Git-tracked files only
-struct -s 100 3       # Skip folders larger than 100MB
-struct -i "*.log" 2   # Add custom ignore patterns
+struct 3                # Show structure up to depth 3
+struct 0                # Show everything (infinite depth)
+struct -z 2             # Show file sizes
+struct -g 2             # Git-tracked files only
+struct -s 100 3         # Skip folders larger than 100MB
+struct -i "*.log" 2     # Add custom ignore patterns
+
+# No-ignore modes
+struct -n all 3         # Disable ALL ignores (show everything)
+struct -n defaults 2    # Disable default ignores only
+struct -n config 3      # Disable config file ignores only
+struct -n venv 2        # Show venv folder contents (disable specific)
 ```
 
 ### Config File

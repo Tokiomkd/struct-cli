@@ -247,6 +247,10 @@ struct Args {
     #[arg(short = 'z', long = "size")]
     show_size: bool,
 
+    /// Disable ignores: 'all', 'defaults', 'config', or specific pattern
+    #[arg(short = 'n', long = "no-ignore")]
+    no_ignore: Option<String>,
+
     /// Starting directory
     #[arg(default_value = ".")]
     path: PathBuf,
@@ -284,6 +288,9 @@ struct StructConfig {
     max_size_bytes: Option<u64>,
     git_files: Option<HashSet<PathBuf>>,
     show_size: bool,
+    skip_defaults: bool,
+    skip_config: bool,
+    skip_specific: Option<String>,
 }
 
 fn main() {
@@ -324,8 +331,23 @@ fn main() {
     
     let max_size_bytes = args.max_size_mb.map(|mb| mb * 1024 * 1024);
 
+    // Parse no-ignore option
+    let (skip_defaults, skip_config, skip_specific) = match args.no_ignore {
+        Some(ref mode) => match mode.as_str() {
+            "all" => (true, true, None),
+            "defaults" => (true, false, None),
+            "config" => (false, true, None),
+            pattern => (false, false, Some(pattern.to_string())),
+        },
+        None => (false, false, None),
+    };
+
     // Load config patterns
-    let config_patterns = load_config_patterns();
+    let config_patterns = if skip_config {
+        Vec::new()
+    } else {
+        load_config_patterns()
+    };
 
     // Parse custom ignore patterns (from -i flag)
     let mut custom_ignores = Vec::new();
@@ -361,6 +383,9 @@ fn main() {
         max_size_bytes,
         git_files,
         show_size: args.show_size,
+        skip_defaults,
+        skip_config,
+        skip_specific,
     };
 
     println!("{}", args.path.display().to_string().cyan());
@@ -475,31 +500,42 @@ fn display_tree(
         let is_dir = path.is_dir();
 
         // Check if we should skip this entry
-        if is_dir && should_ignore_dir(&name) {
-            // Count files in ignored directory
-            let ignored_count = WalkDir::new(&path)
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.file_type().is_file())
-                .count();
-
-            let connector = if is_last_entry { "└── " } else { "├── " };
-            let dir_name = format!("{}/", name).blue().bold();
-            
-            if config.show_size {
-                let size = get_dir_size(&path);
-                let size_str = format_size(size);
-                let count_msg = format!(" ({}, {} files ignored)", size_str, ignored_count).bright_black();
-                println!("{}{}{}{}", prefix, connector, dir_name, count_msg);
+        if is_dir {
+            let should_skip = if config.skip_defaults {
+                false
+            } else if let Some(ref specific) = config.skip_specific {
+                // Only ignore if it matches the specific pattern
+                name == specific
             } else {
-                let count_msg = format!(" ({} files ignored)", ignored_count).bright_black();
-                println!("{}{}{}{}", prefix, connector, dir_name, count_msg);
+                should_ignore_dir(&name)
+            };
+
+            if should_skip {
+                // Count files in ignored directory
+                let ignored_count = WalkDir::new(&path)
+                    .into_iter()
+                    .filter_map(|e| e.ok())
+                    .filter(|e| e.file_type().is_file())
+                    .count();
+
+                let connector = if is_last_entry { "└── " } else { "├── " };
+                let dir_name = format!("{}/", name).blue().bold();
+                
+                if config.show_size {
+                    let size = get_dir_size(&path);
+                    let size_str = format_size(size);
+                    let count_msg = format!(" ({}, {} files ignored)", size_str, ignored_count).bright_black();
+                    println!("{}{}{}{}", prefix, connector, dir_name, count_msg);
+                } else {
+                    let count_msg = format!(" ({} files ignored)", ignored_count).bright_black();
+                    println!("{}{}{}{}", prefix, connector, dir_name, count_msg);
+                }
+                continue;
             }
-            continue;
         }
 
-        // Check custom ignore patterns
-        if matches_custom_pattern(&name, &config.custom_ignores) {
+        // Check custom ignore patterns (unless we have a specific skip pattern)
+        if config.skip_specific.is_none() && matches_custom_pattern(&name, &config.custom_ignores) {
             continue;
         }
 
