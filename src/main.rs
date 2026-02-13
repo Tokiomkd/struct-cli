@@ -170,7 +170,13 @@ fn main() {
         }
     }
 
-    let depth = args.depth.unwrap_or(3);
+    // Depth 0 means infinite, otherwise use provided depth or default to 3
+    let depth = match args.depth {
+        Some(0) => usize::MAX,  // Infinite depth
+        Some(d) => d,
+        None => 3,              // Default depth
+    };
+    
     let max_size_bytes = args.max_size_mb.map(|mb| mb * 1024 * 1024);
 
     // Load config patterns
