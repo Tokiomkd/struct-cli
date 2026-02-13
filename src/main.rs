@@ -92,7 +92,7 @@ fn clear_config_patterns() {
     }
 }
 
-fn search_files(pattern: &str, start_path: &Path) {
+fn search_files(pattern: &str, start_path: &Path, max_depth: usize) {
     // Convert glob pattern to regex
     let regex_pattern = pattern.replace("*", ".*").replace("?", ".");
     let re = match Regex::new(&format!("^{}$", regex_pattern)) {
@@ -108,6 +108,7 @@ fn search_files(pattern: &str, start_path: &Path) {
 
     // Search through all files
     for entry in WalkDir::new(start_path)
+        .max_depth(max_depth)
         .into_iter()
         .filter_entry(|e| {
             // Skip common ignore directories to make search faster
@@ -274,6 +275,9 @@ enum Commands {
     Clear,
     /// Search for files matching a pattern
     Search {
+        /// Maximum depth to search (0 for infinite)
+        #[arg(default_value = "0")]
+        depth: usize,
         /// Pattern to search for (e.g., "*.env", "config", "test*")
         pattern: String,
         /// Starting directory
@@ -289,7 +293,7 @@ struct StructConfig {
     git_files: Option<HashSet<PathBuf>>,
     show_size: bool,
     skip_defaults: bool,
-    skip_config: bool,
+    _skip_config: bool,
     skip_specific: Option<String>,
 }
 
@@ -315,8 +319,9 @@ fn main() {
                 clear_config_patterns();
                 return;
             }
-            Commands::Search { pattern, path } => {
-                search_files(&pattern, &path);
+            Commands::Search { depth, pattern, path } => {
+                let max_depth = if depth == 0 { usize::MAX } else { depth };
+                search_files(&pattern, &path, max_depth);
                 return;
             }
         }
@@ -384,7 +389,7 @@ fn main() {
         git_files,
         show_size: args.show_size,
         skip_defaults,
-        skip_config,
+        _skip_config: skip_config,
         skip_specific,
     };
 
@@ -505,7 +510,7 @@ fn display_tree(
                 false
             } else if let Some(ref specific) = config.skip_specific {
                 // Only ignore if it matches the specific pattern
-                name == specific
+                &name == specific
             } else {
                 should_ignore_dir(&name)
             };
