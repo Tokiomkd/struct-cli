@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struct - A smart tree alternative that respects your sanity</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        github: {
+                            dark: '#0d1117',
+                            darker: '#010409',
+                            border: '#30363d',
+                            text: '#c9d1d9',
+                            muted: '#8b949e',
+                            accent: '#58a6ff',
+                            green: '#3fb950',
+                            blue: '#58a6ff',
+                            purple: '#a371f7',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'cursor': 'cursor 1s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        cursor: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- External Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+    <!-- Background -->
+    <div class="fixed inset-0 star-bg pointer-events-none"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-github-border bg-github-dark/80 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-github-accent to-github-purple flex items-center justify-center shadow-lg shadow-github-accent/20">
+                        <i data-lucide="folder-tree" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-white">struct</span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <a href="#features" class="text-sm text-github-muted hover:text-github-text transition-colors hidden sm:block">Features</a>
+                    <a href="#install" class="text-sm text-github-muted hover:text-github-text transition-colors hidden sm:block">Install</a>
+                    <a href="https://github.com/caffienerd/struct-cli" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-github-border hover:border-github-accent hover:text-github-accent transition-all text-sm font-medium group">
+                        <i data-lucide="github" class="w-4 h-4"></i>
+                        <span>Star on GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div class="text-center space-y-8 animate-fade-in">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-github-border/30 border border-github-border text-xs font-medium text-github-accent mb-4">
+                <span class="flex w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                Built with Rust
+            </div>
+            
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white">
+                A <span class="gradient-text">tree</span> alternative
+            </h1>
+            
+            <p class="max-w-2xl mx-auto text-lg sm:text-xl text-github-muted leading-relaxed">
+                Stop drowning in dependency folders. Struct shows your project's actual structure while intelligently hiding the noise you don't care about.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                <a href="#install" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-github-accent hover:bg-blue-600 text-white font-medium transition-all hover-lift">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    Install Now
+                </a>
+                <a href="https://github.com/caffienerd/struct-cli" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-github-border hover:bg-github-border/30 text-github-text font-medium transition-all">
+                    <i data-lucide="external-link" class="w-5 h-5"></i>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+
+        <!-- Terminal Demo -->
+        <div class="mt-16 relative max-w-3xl mx-auto animate-slide-up" style="animation-delay: 0.2s">
+            <div class="rounded-xl overflow-hidden bg-[#161b22] border border-github-border terminal-shadow">
+                <!-- Terminal Header -->
+                <div class="flex items-center gap-2 px-4 py-3 bg-[#0d1117] border-b border-github-border">
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="flex-1 text-center">
+                        <span class="text-xs text-github-muted font-mono">bash — struct</span>
+                    </div>
+                    <div class="w-16"></div>
+                </div>
+                
+                <!-- Terminal Content -->
+                <div class="p-6 font-mono text-sm overflow-x-auto">
+                    <div class="space-y-4">
+                        <!-- Before -->
+                        <div>
+                            <div class="text-github-muted mb-2"># Before: tree command - chaos</div>
+                            <div class="text-red-400 flex items-center gap-2">
+                                <span>$</span>
+                                <span class="text-github-text">tree -L 3</span>
+                            </div>
+                            <div class="text-github-muted mt-2 pl-4 opacity-70">
+                                venv/<br>
+                                ├── lib/<br>
+                                │   ├── python3.11/<br>
+                                │   │   ├── site-packages/<br>
+                                │   │   │   ├── pip/<br>
+                                │   │   │   │   ├── __init__.py<br>
+                                │   │   │   │   ├── ... (2000+ files you didn't ask for)
+                            </div>
+                        </div>
+                        
+                        <!-- After -->
+                        <div class="pt-2 border-t border-github-border/30">
+                            <div class="text-github-muted mb-2"># After: struct</div>
+                            <div class="text-github-green flex items-center gap-2">
+                                <span>$</span>
+                                <span class="text-github-text">struct 3</span>
+                            </div>
+                            <div class="mt-2 pl-4">
+                                <div class="text-github-text">venv/ <span class="syntax-ignored">(2741 files ignored)</span></div>
+                                <div class="syntax-dir">src/</div>
+                                <div class="pl-4 syntax-file">├── main.rs</div>
+                                <div class="pl-4 syntax-file">└── lib.rs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Glow effect -->
+            <div class="absolute -inset-1 bg-gradient-to-r from-github-accent/20 to-purple-500/20 rounded-xl blur-2xl -z-10 opacity-50"></div>
+        </div>
+    </section>
+
+    <!-- Why Struct Section -->
+    <section id="why" class="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-github-border">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Why Struct?</h2>
+            <p class="text-github-muted max-w-2xl mx-auto">Built by developers, for developers. No more scrolling through endless dependency folders.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Signal over noise -->
+            <div class="feature-card group p-6 rounded-xl border border-github-border bg-[#161b22]/50 hover:border-github-accent/50 transition-all hover-lift">
+                <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="eye-off" class="w-6 h-6 text-github-accent"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Signal over noise</h3>
+                <p class="text-github-muted text-sm leading-relaxed">Automatically hides venv, node_modules, .git, and 20+ other noise directories while showing you the file count.</p>
+            </div>
+
+            <!-- Intelligent defaults -->
+            <div class="feature-card group p-6 rounded-xl border border-github-border bg-[#161b22]/50 hover:border-github-accent/50 transition-all hover-lift">
+                <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="brain" class="w-6 h-6 text-github-green"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Intelligent defaults</h3>
+                <p class="text-github-muted text-sm leading-relaxed">Knows about Python, JavaScript, Rust, and more. No configuration needed to get started.</p>
+            </div>
+
+            <!-- Directory summaries -->
+            <div class="feature-card group p-6 rounded-xl border border-github-border bg-[#161b22]/50 hover:border-github-accent/50 transition-all hover-lift">
+                <div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="bar-chart-3" class="w-6 h-6 text-github-purple"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Directory summaries</h3>
+                <p class="text-github-muted text-sm leading-relaxed"><code class="text-github-accent bg-github-border/30 px-1 rounded">struct 0</code> gives you detailed stats: file counts, sizes, types, and what's being ignored.</p>
+            </div>
+
+            <!-- Built-in search -->
+            <div class="feature-card group p-6 rounded-xl border border-github-border bg-[#161b22]/50 hover:border-github-accent/50 transition-all hover-lift">
+                <div class="w-12 h-12 rounded-lg bg-yellow-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="search" class="w-6 h-6 text-yellow-500"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Built-in search</h3>
+                <p class="text-github-muted text-sm leading-relaxed">Find files across your project with <code class="text-github-accent bg-github-border/30 px-1 rounded">struct search "*.py"</code>. Tree or flat output modes.</p>
+            </div>
+
+            <!-- Git-aware -->
+            <div class="feature-card group p-6 rounded-xl border border-github-border bg-[#161b22]/50 hover:border-github-accent/50 transition-all hover-lift">
+                <div class="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="git-branch" class="w-6 h-6 text-orange-500"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Git-aware</h3>
+                <p class="text-github-muted text-sm leading-relaxed">Use <code class="text-github-accent bg-github-border/30 px-1 rounded">-g</code> flag to show only git-tracked files. Perfect for seeing what's actually in your repo.</p>
+            </div>
+
+            <!-- Blazing fast -->
+            <div class="feature-card group p-6 rounded-xl border border-github-border bg-[#161b22]/50 hover:border-github-accent/50 transition-all hover-lift">
+                <div class="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="zap" class="w-6 h-6 text-red-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Blazing fast</h3>
+                <p class="text-github-muted text-sm leading-relaxed">Written in Rust for performance. Scan thousands of files in milliseconds, not seconds.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Detail -->
+    <section id="features" class="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-github-border">
+        <div class="grid lg:grid-cols-2 gap-12 items-start">
+            <div class="space-y-6">
+                <h2 class="text-3xl sm:text-4xl font-bold text-white">Everything you need,<br>nothing you don't</h2>
+                <p class="text-github-muted text-lg">Struct is designed to be powerful yet intuitive. Here are the features that make it stand out:</p>
+                
+                <div class="space-y-4 pt-4">
+                    <div class="flex items-start gap-4">
+                        <div class="w-6 h-6 rounded bg-github-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="check" class="w-4 h-4 text-github-accent"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-medium">Depth Control</h4>
+                            <p class="text-github-muted text-sm">Infinite depth by default, or limit with <code class="text-github-accent">struct 3</code></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-4">
+                        <div class="w-6 h-6 rounded bg-github-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="check" class="w-4 h-4 text-github-accent"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-medium">Size Awareness</h4>
+                            <p class="text-github-muted text-sm">Show file sizes with <code class="text-github-accent">-z</code> or skip large folders with <code class="text-github-accent">-s 100</code></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-4">
+                        <div class="w-6 h-6 rounded bg-github-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="check" class="w-4 h-4 text-github-accent"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-medium">Custom Ignores</h4>
+                            <p class="text-github-muted text-sm">Add permanent ignore patterns with <code class="text-github-accent">struct add "pattern"</code></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-4">
+                        <div class="w-6 h-6 rounded bg-github-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="check" class="w-4 h-4 text-github-accent"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-medium">Flexible Output</h4>
+                            <p class="text-github-muted text-sm">Tree view or flat list with full paths for easy grep/scripting</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Examples -->
+            <div class="space-y-4">
+                <div class="rounded-lg overflow-hidden bg-[#161b22] border border-github-border">
+                    <div class="flex items-center gap-2 px-4 py-2 bg-[#0d1117] border-b border-github-border">
+                        <span class="text-xs text-github-muted font-mono">Usage Examples</span>
+                    </div>
+                    <div class="p-4 font-mono text-sm space-y-3 overflow-x-auto">
+                        <div class="code-line">
+                            <span class="syntax-comment"># Show current directory structure</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="text-github-green">$</span> <span class="text-github-text">struct</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="syntax-comment"># Show 3 levels deep with sizes</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="text-github-green">$</span> <span class="text-github-text">struct 3 -z</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="syntax-comment"># Git-tracked files only</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="text-github-green">$</span> <span class="text-github-text">struct 2 -g</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="syntax-comment"># Search for Python files</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="text-github-green">$</span> <span class="text-github-text">struct search "*.py" -f</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="syntax-comment"># Summary mode</span>
+                        </div>
+                        <div class="code-line">
+                            <span class="text-github-green">$</span> <span class="text-github-text">struct 0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ignore list preview -->
+                <div class="rounded-lg overflow-hidden bg-[#161b22] border border-github-border">
+                    <div class="flex items-center justify-between px-4 py-2 bg-[#0d1117] border-b border-github-border">
+                        <span class="text-xs text-github-muted font-mono">Auto-ignored Directories</span>
+                        <span class="text-xs text-github-accent">20+ patterns</span>
+                    </div>
+                    <div class="p-4 font-mono text-xs text-github-muted">
+                        <div class="grid grid-cols-2 gap-2">
+                            <span>venv, .venv, env</span>
+                            <span>node_modules</span>
+                            <span>__pycache__, .pytest_cache</span>
+                            <span>target, build, dist</span>
+                            <span>.git, .svn, .hg</span>
+                            <span>.vscode, .idea</span>
+                            <span>.next, .nuxt</span>
+                            <span>*.pyc, *.pyo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation -->
+    <section id="install" class="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto border-t border-github-border">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Installation</h2>
+            <p class="text-github-muted">Get started in seconds. Struct is lightweight and dependency-free.</p>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Manual Install -->
+            <div class="rounded-xl overflow-hidden bg-[#161b22] border border-github-border terminal-shadow">
+                <div class="flex items-center justify-between px-4 py-3 bg-[#0d1117] border-b border-github-border">
+                    <span class="text-sm text-github-muted font-mono">Manual Install</span>
+                    <button onclick="copyCode('git clone https://github.com/caffienerd/struct-cli.git && cd struct-cli && chmod +x install.sh && ./install.sh')" class="text-xs flex items-center gap-1 text-github-muted hover:text-github-accent transition-colors copy-btn">
+                        <i data-lucide="copy" class="w-3 h-3"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <div class="p-4 font-mono text-sm space-y-1">
+                    <div class="text-github-green">$ git clone https://github.com/caffienerd/struct-cli.git</div>
+                    <div class="text-github-green">$ cd struct-cli</div>
+                    <div class="text-github-green">$ chmod +x install.sh && ./install.sh</div>
+                </div>
+            </div>
+
+            <!-- Compatibility Note -->
+            <div class="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#161b22]/50 border border-github-border/50">
+                <i data-lucide="linux" class="w-5 h-5 text-github-muted"></i>
+                <span class="text-sm text-github-muted">Works on RHEL, Arch, Ubuntu, Debian, Fedora, and other Linux distributions</span>
+            </div>
+
+            <!-- Quick Start -->
+            <div class="mt-8 p-6 rounded-xl bg-gradient-to-r from-github-accent/10 to-purple-500/10 border border-github-accent/20">
+                <h3 class="text-white font-semibold mb-2 flex items-center gap-2">
+                    <i data-lucide="rocket" class="w-5 h-5 text-github-accent"></i>
+                    Quick Start
+                </h3>
+                <div class="font-mono text-sm space-y-2 text-github-text">
+                    <div><span class="text-github-muted"># Show everything (infinite depth)</span></div>
+                    <div>struct</div>
+                    <div class="mt-2"><span class="text-github-muted"># Show 3 levels deep</span></div>
+                    <div>struct 3</div>
+                    <div class="mt-2"><span class="text-github-muted"># Summary of current directory</span></div>
+                    <div>struct 0</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GitHub CTA -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto border-t border-github-border mb-20">
+        <div class="text-center space-y-6">
+            <div class="w-16 h-16 mx-auto rounded-full bg-github-border/30 flex items-center justify-center">
+                <i data-lucide="github" class="w-8 h-8 text-white"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-white">Open Source</h2>
+            <p class="text-github-muted max-w-lg mx-auto">
+                Struct is MIT licensed and open source. Found a bug? Want a feature? Contributions are welcome.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                <a href="https://github.com/caffienerd/struct-cli" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white text-github-darker font-semibold hover:bg-gray-100 transition-all hover-lift">
+                    <i data-lucide="star" class="w-5 h-5"></i>
+                    Star on GitHub
+                </a>
+                <a href="https://github.com/caffienerd/struct-cli/issues" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-github-border hover:bg-github-border/30 text-github-text font-medium transition-all">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    Report Issue
+                </a>
+            </div>
+            <div class="pt-4 text-sm text-github-muted font-mono">
+                <span class="text-github-accent">MIT</span> License • Built with <span class="text-orange-500">Rust</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-github-border py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-github-muted">
+            <div class="flex items-center gap-2 font-mono text-xs">
+                <div class="w-5 h-5 rounded-md bg-gradient-to-br from-github-accent to-github-purple flex items-center justify-center">
+                    <i data-lucide="folder-tree" class="w-3 h-3 text-white"></i>
+                </div>
+                <span>struct</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <a href="https://github.com/caffienerd/struct-cli" target="_blank" rel="noopener" class="hover:text-github-text transition-colors">GitHub</a>
+                <a href="https://github.com/caffienerd/struct-cli/issues" target="_blank" rel="noopener" class="hover:text-github-text transition-colors">Issues</a>
+                <span class="text-github-border">|</span>
+                <span>© 2026 caffienerd</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- External JavaScript -->
+    <script src="script.js"></script></body>
+</html>

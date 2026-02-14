@@ -1,0 +1,159 @@
+/* Base styles */
+body {
+    background-color: #0d1117;
+    color: #c9d1d9;
+}
+
+/* Terminal shadow effect */
+.terminal-shadow {
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.8);
+}
+
+/* Gradient text for headings */
+.gradient-text {
+    background: linear-gradient(135deg, #58a6ff 0%, #a371f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Hover lift animation */
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -10px rgba(88, 166, 255, 0.2);
+}
+
+/* Code line counter */
+.code-line {
+    counter-increment: line;
+}
+
+.code-line::before {
+    content: counter(line);
+    display: inline-block;
+    width: 2rem;
+    margin-right: 1rem;
+    color: #6e7681;
+    text-align: right;
+    font-size: 0.875rem;
+}
+
+/* Syntax highlighting colors */
+.syntax-dir {
+    color: #58a6ff;
+}
+
+.syntax-file {
+    color: #c9d1d9;
+}
+
+.syntax-ignored {
+    color: #8b949e;
+    font-style: italic;
+}
+
+.syntax-size {
+    color: #3fb950;
+}
+
+.syntax-comment {
+    color: #8b949e;
+}
+
+/* Cursor blink animation */
+.cursor-blink::after {
+    content: '▋';
+    animation: cursor 1s infinite;
+    color: #58a6ff;
+}
+
+@keyframes cursor {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+
+/* Star background pattern */
+.star-bg {
+    background-image: 
+        radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    opacity: 0.03;
+}
+
+/* Feature cards animation initial state */
+.feature-card {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+    background-color: rgba(88, 166, 255, 0.3);
+    color: #c9d1d9;
+}
+
+/* Custom scrollbar for terminal */
+.terminal-shadow ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.terminal-shadow ::-webkit-scrollbar-track {
+    background: #0d1117;
+}
+
+.terminal-shadow ::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 4px;
+}
+
+.terminal-shadow ::-webkit-scrollbar-thumb:hover {
+    background: #484f58;
+}
+
+/* Focus visible for accessibility */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid #58a6ff;
+    outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .feature-card {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
