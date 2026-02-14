@@ -36,8 +36,8 @@ The folder still appears, but you get a clean file count instead of thousands of
 ## Installation
 
 ```bash
-cargo build --release
-sudo cp target/release/struct /usr/local/bin/
+git clone https://github.com/caffienerd/struct-cli.git && cd struct-cli
+chmod +x install.sh && ./install.sh
 ```
 
 ## Quick Start
