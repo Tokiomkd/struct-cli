@@ -132,8 +132,17 @@ pub fn display_tree(
 
         // Check git mode
         if let Some(ref git_files) = config.git_files {
-            if !is_dir && !git_files.contains(&path) {
-                continue;
+            if is_dir {
+                // For directories, check if ANY tracked file is inside this directory
+                let has_tracked_files = git_files.iter().any(|f| f.starts_with(&path));
+                if !has_tracked_files {
+                    continue; // Skip this directory, no tracked files inside
+                }
+            } else {
+                // For files, check if this specific file is tracked
+                if !git_files.contains(&path) {
+                    continue; // Skip this untracked file
+                }
             }
         }
 
