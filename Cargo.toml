@@ -1,7 +1,14 @@
 [package]
 name = "struct-cli"
-version = "0.1.0"
+version = "0.3.1"
 edition = "2021"
+authors = ["Coffee Nerd nerdcoffeemail@gmail.com"]
+description = "A smarter tree command with intelligent defaults. Filters out common clutter like node_modules and venv, supports custom ignore patterns, and includes advanced features such as file search, directory summaries, size-aware filtering, and git integration."
+license = "MIT"
+readme = "README.md"
+keywords = ["cli", "tree", "filesystem", "rust", "linux"]
+categories = ["command-line-utilities"]
+repository = "https://github.com/caffienerd/struct-cli"
 
 [[bin]]
 name = "struct"
