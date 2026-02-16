@@ -1,6 +1,7 @@
 # struct
 
-A Rust-based tree alternative that actually respects your sanity.
+Struct: tree with a developer brain.
+Stop drowning in site-packages — struct shows you the code you care about.
 
 ## The Problem
 
@@ -532,6 +533,7 @@ struct search "*.py" -f | grep test
 ```
 
 ---
+### Drop in a star if you liked this repo! It helps me make it real!
 
 ## Why Rust
 

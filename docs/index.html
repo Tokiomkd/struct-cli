@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Struct - A smart tree alternative that respects your sanity</title>
+    <title>Struct: tree with a developer brain.</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -96,7 +96,7 @@
         <div class="text-center space-y-8 animate-fade-in">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-github-border/30 border border-github-border text-xs font-medium text-github-accent mb-4">
                 <span class="flex w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                v0.4.2 • Rust • Built with 🦀
+                v0.4.2 • Built with Rust 🦀 
             </div>
             
             <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white">
@@ -104,7 +104,7 @@
             </h1>
             
             <p class="max-w-2xl mx-auto text-lg sm:text-xl text-github-muted leading-relaxed">
-                Stop drowning in dependency folders. Struct shows your project's actual structure while intelligently hiding the noise you don't care about.
+                Stop drowning in dependency folders. Struct cuts through the clutter, shows your project's actual structure while intelligently hiding the noise you don't ask for.
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -179,11 +179,37 @@
         </div>
     </section>
 
+    <!-- Support Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-github-accent/10 via-github-purple/10 to-github-accent/10 border border-github-accent/20 p-8 sm:p-12">
+            <!-- Accent line top -->
+            <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-github-accent/50 to-transparent"></div>
+            
+            <div class="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-8">
+                <div class="flex-1">
+                    <h3 class="text-xl sm:text-2xl font-bold text-white mb-2">Like the project?</h3>
+                    <p class="text-github-muted leading-relaxed">
+                        A star on GitHub helps to keep it alive and thriving. Your support means everything to the development of Struct. Thanks for being part of this journey!
+                    </p>
+                </div>
+                <div class="flex-shrink-0">
+                    <a href="https://github.com/caffienerd/struct-cli" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-github-accent hover:bg-blue-600 text-white font-semibold transition-all hover-lift shadow-lg shadow-github-accent/20">
+                        <i data-lucide="star" class="w-5 h-5"></i>
+                        Star on GitHub
+                    </a>
+                </div>
+            </div>
+
+            <!-- Accent line bottom -->
+            <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-github-accent/50 to-transparent"></div>
+        </div>
+    </section>
+
     <!-- Why Struct Section -->
     <section id="why" class="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-github-border">
         <div class="text-center mb-16">
             <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Why Struct?</h2>
-            <p class="text-github-muted max-w-2xl mx-auto">Built by developers, for developers. No more scrolling through endless dependency folders.</p>
+            <p class="text-github-muted max-w-2xl mx-auto">Built by developer, for developers. No more scrolling through endless dependency folders.</p>
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -427,10 +453,12 @@
                 <div class="font-mono text-sm space-y-2 text-github-text">
                     <div><span class="text-github-muted"># Show everything (infinite depth)</span></div>
                     <div>struct</div>
-                    <div class="mt-2"><span class="text-github-muted"># Show 3 levels deep</span></div>
-                    <div>struct 3</div>
+                    <div class="mt-2"><span class="text-github-muted"># Search for python files in your folder</span></div>
+                    <div>struct search "*.py"</div>
                     <div class="mt-2"><span class="text-github-muted"># Summary of current directory</span></div>
                     <div>struct 0</div>
+                    <div class="mt-2"><span class="text-github-muted"># show git tracked files from the root git folder</span></div>
+                    <div>struct --gr</div>
                 </div>
             </div>
         </div>
