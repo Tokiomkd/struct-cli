@@ -37,8 +37,6 @@ The folder still appears, but you get a clean file count instead of thousands of
 ## Installation
 
 ### Option 1: Install from crates.io
-The easiest way is to install directly via Cargo (make sure you have Rust installed):
-
 ```bash
 cargo install struct-cli
 ```
@@ -46,7 +44,7 @@ cargo install struct-cli
 View on [crates.io](https://crates.io/crates/struct-cli)
 
 ### Option 2: Install from source
-```
+```bash
 git clone https://github.com/caffienerd/struct-cli.git
 cd struct-cli
 chmod +x install.sh && ./install.sh
@@ -59,26 +57,42 @@ git clone https://github.com/caffienerd/struct-cli.git && cd struct-cli
 chmod +x uninstall.sh && ./uninstall.sh
 ```
 
+---
+
 ## Quick Start
 
 ```bash
-struct                          # Show everything (infinite depth by default)
-struct 0                        # Show detailed summary of current directory
-struct 3                        # Show 3 levels deep
-struct 5 -z                     # Show 5 levels with file sizes
-struct 3 -p ~/projects          # Show ~/projects, 3 levels deep
+struct                          # Full tree (current dir, infinite depth)
+struct 0                        # Detailed summary of current directory
+struct 3                        # 3 levels deep
+struct ~/dir                    # Full tree of a specific directory
+struct 2 ~/dir                  # Specific directory, 2 levels deep
+struct ~/dir 2                  # Same — order doesn't matter
+struct 5 ~/dir -z               # 5 levels with file sizes
 ```
 
 ---
 
 ## Complete Usage Guide
 
-### struct 0 - Directory Summary Mode
+### Syntax
 
-When you run `struct 0`, you get a detailed summary of the current directory with stats for each item:
+```
+struct [DEPTH] [PATH] [FLAGS]
+struct search "PATTERN" [PATH] [DEPTH] [FLAGS]
+struct 0 [PATH]                       → detailed summary view
+```
+
+Both `DEPTH` and `PATH` are optional positional arguments — no flags needed.
+Order doesn't matter: `struct 2 ~/dir` and `struct ~/dir 2` both work.
+
+---
+
+### struct 0 — Directory Summary Mode
 
 ```bash
 struct 0
+struct 0 ~/projects
 ```
 
 **Output:**
@@ -93,166 +107,71 @@ src/
   ignored:  target(948 files)
 
 README.md
-  /home/user/projects/myproject/README.md
   12.5K
-
-.gitignore
-  /home/user/projects/myproject/.gitignore
-  486B
 
 ── ignored (top level) ──
   .git(60 files), target(948 files) · 1008 files · 45.2M
-```
-
-**What it shows:**
-- Current directory path with git branch
-- For each directory:
-  - Full path
-  - Total stats (all files recursively)
-  - Visible stats (excluding ignored folders)
-  - File type breakdown
-  - Ignored subdirectories
-- For each file:
-  - Full path
-  - File size
-- Summary of top-level ignored items
-
-**Use cases:**
-- Quick directory analysis
-- Find what's taking up space
-- See project composition at a glance
-- Identify ignored bloat
-
----
-
-### Basic Tree Display
-
-**Show directory structure with depth limit:**
-
-```bash
-struct [DEPTH] [OPTIONS]
-```
-
-- `DEPTH`: How many levels to show (default: infinite, 0 = current dir only)
-- Use `-p` or `--path` to specify a different directory
-
-**Examples:**
-```bash
-struct                          # Current dir, infinite depth
-struct 1                        # Current dir only (1 level)
-struct 3                        # Current dir, 3 levels deep
-struct 5 -p ~/projects          # Projects folder, 5 levels
-struct 2 --path /etc            # /etc, 2 levels
 ```
 
 ---
 
 ### Git Integration
 
-`struct` now has comprehensive git support, allowing you to filter files by their git status.
+Filter output by git status. All git flags can be combined with any other flag.
 
-#### `-g, --git`
-Show only git-tracked files (ignores everything not in git).
+When multiple git flags conflict, priority is: `--gc` > `--gs` > `--gu` > `-g` > `--gh`
 
+#### `-g, --git` — tracked files only
 ```bash
-struct 2 -g                     # Git-tracked files only
-struct 3 --git                  # Long form
+struct -g
+struct 2 -g ~/git-project
 ```
 
-**Output:**
-```
-src/
-├── main.rs (tracked)
-├── lib.rs (tracked)
-└── utils.rs (tracked)
-
-tests/
-└── integration_test.rs (tracked)
-```
-
-**Use case:** Clean view of actual source code without build artifacts.
-
-#### `--gu`
-Show only untracked files (not yet added to git).
-
+#### `--gu` — untracked files only
 ```bash
-struct 2 --gu                   # Untracked files only
+struct --gu
+struct 2 --gu ~/git-project
 ```
 
-**Output (color-coded red for visibility):**
-```
-.env (untracked)
-debug.log (untracked)
-tmp/
-└── cache.tmp (untracked)
-```
-
-#### `--gs`
-Show only staged files (ready to commit).
-
+#### `--gs` — staged files only
 ```bash
-struct 2 --gs                   # Staged files only
+struct --gs
 ```
 
-**Output (color-coded green for visibility):**
-```
-src/
-├── main.rs (staged)
-└── lib.rs (staged)
-
-README.md (staged)
-```
-
-#### `--gc`
-Show only modified/changed files (unstaged changes).
-
+#### `--gc` — changed/modified files only
 ```bash
-struct 2 --gc                   # Modified files only
+struct --gc
 ```
 
-**Output (color-coded yellow for visibility):**
-```
-src/
-├── main.rs (modified)
-└── config.rs (modified)
-
-tests/unit_test.rs (modified)
-```
-
-#### `--gr`
-Start from git root (repository root) with any git mode. Useful when inside a subdirectory of a git repo.
-
+#### `--gh` — last commit per directory
 ```bash
-struct 2 -g --gr                # Git-tracked files from repo root
-struct 3 --gc --gr              # Modified files from repo root
-struct 1 --gs --gr              # Staged files from repo root
+struct --gh
 ```
 
-**Use case:** Get consistent output regardless of your current working directory within the repository.
-
-**Git Mode Features:**
-- **Color-coded output**: Green (staged), Yellow (modified), Red (untracked)
-- **Git branch display**: Shows current branch in output
-- **Clean filtering**: Automatically respects `.gitignore`
-- **Combinable**: Can combine git modes with other flags like `-z` for sizes
+#### Root variants — start from git root regardless of current directory
+```bash
+struct --gr        # tracked, from git root
+struct --gur       # untracked, from git root
+struct --gsr       # staged, from git root
+struct --gcr       # changed, from git root
+struct --ghr       # history, from git root
+```
 
 **Examples:**
 ```bash
 struct 3 -g -z                  # Tracked files with sizes
-struct 2 --gu --gr              # Untracked files from repo root
-struct 3 --gs -z --gr           # Staged files with sizes from repo root
+struct --gcr ~/git-project/myapp   # Changed files from repo root
+struct 2 --gur                  # Untracked files from git root, 2 levels
 ```
 
 ---
 
-### Flags and Options
+### Flags
 
-#### `-z, --size`
-Show file sizes for all files and ignored directories.
-
+#### `-z, --size` — show file sizes
 ```bash
-struct 3 -z                     # Show sizes
-struct 2 --size                 # Long form
+struct -z
+struct 3 -z ~/dir
 ```
 
 **Output:**
@@ -261,288 +180,213 @@ main.rs (8.5K)
 venv/ (156.3M, 2741 files ignored)
 ```
 
-#### `-p, --path PATH`
-Specify directory to display (default: current directory).
+#### `-s, --skip-large SIZE` — skip large directories
+```bash
+struct -s 100                   # Skip dirs > 100MB
+struct 3 -s 500 ~/dir
+```
+
+#### `-i, --ignore PATTERNS` — inline ignore patterns
+Comma-separated, wildcards supported. Merged with config patterns.
 
 ```bash
-struct 3 -p ~/projects          # Projects folder, 3 levels
-struct --path /etc              # /etc directory
-struct 5 -p ~/code -z           # Code folder with sizes
+struct -i "*.log"
+struct -i "*.tmp,cache*,build"
+struct 3 ~/dir -i "*.log,screenshots"
 ```
 
-#### `-g, --git`
-**Deprecated:** Use Git Integration section above instead. This flag shows git-tracked files.
+#### `-n, --no-ignore TARGET` — un-ignore
+Show things that are normally hidden. Can be given multiple times.
 
-#### `-s, --skip-large SIZE_MB`
-Skip folders larger than specified size in megabytes.
+| Value | Effect |
+|---|---|
+| `all` | Disable ALL ignores |
+| `defaults` | Disable built-in defaults (venv, node_modules, etc.) |
+| `config` | Disable config file patterns only |
+| `PATTERN` | Un-ignore one specific name (e.g. `venv`, `__pycache__`) |
 
 ```bash
-struct 3 -s 100                 # Skip folders > 100MB
-struct 2 --skip-large 500       # Skip folders > 500MB
-```
-
-**Output:**
-```
-node_modules/ (450MB, skipped)
-```
-
-#### `-i, --ignore PATTERNS`
-Add custom ignore patterns (comma-separated, wildcards supported).
-
-```bash
-struct 3 -i "*.log"             # Ignore .log files
-struct 2 -i "*.tmp,cache*"      # Multiple patterns
-struct 3 --ignore "test*,*.bak" # Long form
-```
-
-#### `-n, --no-ignore MODE`
-Disable ignores selectively. MODE can be:
-- `all` - Disable ALL ignores (show everything)
-- `defaults` - Disable built-in defaults (venv, node_modules, etc.)
-- `config` - Disable config file patterns only
-- `PATTERN` - Show specific folder (e.g., `venv`, `node_modules`)
-
-```bash
-struct 2 -n all                 # Show absolutely everything
-struct 3 -n defaults            # Show venv, __pycache__, etc.
-struct 2 -n config              # Ignore defaults but not config
-struct 2 -n venv                # Show venv contents only
-struct 1 -n node_modules        # Peek inside node_modules
-struct 3 --no-ignore all        # Long form
-```
-
-#### `--version`
-Display the version of struct-cli.
-
-```bash
-struct --version
-```
-
-**Output:**
-```
-struct-cli 0.4.2
-```
-
-**Combining flags:**
-```bash
-struct 3 -z -g                  # Git-tracked files with sizes
-struct 2 -n all -z              # Everything with sizes
-struct 3 -s 200 -i "*.log"      # Skip large + ignore logs
+struct -n all                       # Show everything
+struct -n defaults                  # Show venv, __pycache__, etc.
+struct -n config                    # Show config-ignored items
+struct -n venv                      # Peek inside venv only
+struct -n __pycache__               # Show __pycache__ contents
+struct -n defaults -n config        # Same as -n all
 ```
 
 ---
 
 ### Config File Management
 
-Save ignore patterns permanently instead of typing `-i` every time.
+Save ignore patterns permanently so you don't have to type `-i` every time.
 
 **Location:** `~/.config/struct/ignores.txt`
 
-#### `struct add PATTERN`
-Add a pattern to permanent ignores.
-
 ```bash
-struct add "chrome_profile"     # Add folder
-struct add "*.log"              # Add file pattern
-struct add "cache"              # Add another pattern
+struct add "chrome_profile"     # Add a pattern
+struct add "*.log"
+struct remove "*.log"           # Remove a pattern
+struct list                     # Show all saved patterns
+struct clear                    # Delete all saved patterns
 ```
 
-#### `struct remove PATTERN`
-Remove a pattern from config.
-
-```bash
-struct remove "cache"           # Remove specific pattern
-```
-
-#### `struct list`
-Show all saved patterns.
-
-```bash
-struct list
-```
-
-**Output:**
+**Output of `struct list`:**
 ```
 custom ignore patterns:
   chrome_profile
   *.log
-  temp*
 
 config file: /home/user/.config/struct/ignores.txt
-```
-
-#### `struct clear`
-Delete all custom patterns.
-
-```bash
-struct clear
 ```
 
 ---
 
 ### Search
 
-Find files AND directories by pattern across your project.
+Find files and directories by pattern. Respects the same ignore rules as the tree view.
 
-```bash
-struct search PATTERN [OPTIONS] [PATH]
+```
+struct search "PATTERN" [PATH] [DEPTH] [FLAGS]
 ```
 
-**Basic search:**
+**Pattern matching rules:**
+- **Plain text** (no `*` or `?`) → case-insensitive **substring** match
+  - `search "gui"` finds `gui.py`, `gui_utils.rs`, `penguin.txt`
+  - `search "cache"` finds `__pycache__`, `.cache`, `cache.json`
+- **Glob patterns** (has `*` or `?`) → exact glob match
+  - `search "*.py"` finds only files ending in `.py`
+  - `search "test*"` finds files starting with `test`
+
+**Basic examples:**
 ```bash
 struct search "*.py"                    # All Python files (current dir)
-struct search "*.env" ~/projects        # All .env files in ~/projects
-struct search "config*"                 # Files starting with "config"
-struct search "test*.rs" /code          # Rust test files in /code
+struct search "gui"                     # Anything containing "gui"
+struct search "__pycache__"             # Find all __pycache__ dirs
+struct search "*.env" ~/dir        # .env files in ~/dir
+struct search "config*" ~/dir 2    # Files starting with "config", 2 levels deep
 ```
 
-**Search options:**
+**Search flags:**
 
-#### `-d, --depth DEPTH`
-Limit search depth (default: 0 = infinite).
-
+#### `[DEPTH]` — limit search depth (positional, default: infinite)
 ```bash
-struct search "*.py" -d 2               # Only 2 levels deep
-struct search "*.toml" --depth 1        # Top level only
-struct search "*.js" -d 3 ~/code        # 3 levels in ~/code
+struct search "*.py" . 2                # 2 levels deep
+struct search "*.toml" ~/dir 1     # Top level only
 ```
 
-#### `-f, --flat`
-Show flat list of full paths instead of tree.
-
+#### `-f, --flat` — flat list instead of tree
 ```bash
-struct search "*.env" -f                # Flat output
-struct search "*.py" --flat             # Long form
+struct search "*.py" -f
+struct search "*.env" ~/dir -f
 ```
 
 **Tree output (default):**
 ```
-found 12 file(s) matching *.py
+found 6 item(s) matching *.py
 
-01_python/
-├── calculator/
-│   └── KalQl8er.py (24.4K)
-├── bgm/
-│   └── BGM.py (44.5K)
-└── timebomb/
-    └── timebomb.py (5.7K)
+timebomb/
+└── Linux/
+    └── python/
+        ├── app_manager.py (11.1K)
+        ├── gui.py (19.4K)
+        └── timer.py (18.5K)
 ```
 
 **Flat output (`-f`):**
 ```
-found 12 file(s) matching *.py
+found 6 item(s) matching *.py
 
-/home/user/projects/01_python/calculator/KalQl8er.py (24.4K)
-/home/user/projects/01_python/bgm/BGM.py (44.5K)
-/home/user/projects/01_python/timebomb/timebomb.py (5.7K)
+timebomb/Linux/python/app_manager.py (11.1K)
+timebomb/Linux/python/gui.py (19.4K)
+timebomb/Linux/python/timer.py (18.5K)
 ```
 
-**Note:** Search results include both files and directories matching your pattern.
-
-**Combining search options:**
+#### `-i, --ignore PATTERNS` — ignore patterns during search
 ```bash
-struct search "*.rs" -d 2 -f            # Rust files, 2 levels, flat
-struct search "test*" --depth 1 --flat ~/code  # Top-level tests, flat
+struct search "*.wav" . -i "windows"
+struct search "*.py" ~/dir -i "venv,__pycache__"
 ```
 
 ---
 
 ## Auto-Ignored Directories
 
-These are hidden by default (folder shown with file count):
+These are hidden by default (shown with file count instead):
 
-**Python:**
-- `__pycache__`, `.pytest_cache`, `.mypy_cache`, `.ruff_cache`
-- `*.pyc`, `*.pyo`, `*.pyd` files
-- `*.egg-info`, `dist`, `build`, `.tox`
-- `venv`, `.venv`, `env`, `virtualenv`
+**Python:** `__pycache__`, `.pytest_cache`, `.mypy_cache`, `venv`, `.venv`, `env`, `virtualenv`, `*.egg-info`, `dist`, `build`
 
-**JavaScript/Node:**
-- `node_modules`, `.npm`, `.yarn`
+**JavaScript:** `node_modules`, `.npm`, `.yarn`
 
-**Version Control:**
-- `.git`, `.svn`, `.hg`
+**Version Control:** `.git`, `.svn`, `.hg`
 
-**IDEs/Editors:**
-- `.vscode`, `.idea`, `.obsidian`
-- `*.swp`, `*.swo` files
+**IDEs:** `.vscode`, `.idea`, `.obsidian`
 
-**Build Artifacts:**
-- `target` (Rust/Java)
-- `bin`, `obj` (C#)
-- `.next`, `.nuxt` (JS frameworks)
+**Build Artifacts:** `target`, `bin`, `obj`, `.next`, `.nuxt`
 
-**Caches:**
-- `chrome_profile`, `lofi_chrome_profile`
-- `GPUCache`, `ShaderCache`, `GrShaderCache`
-- `Cache`, `blob_storage`
+**Caches:** `chrome_profile`, `GPUCache`, `ShaderCache`, `Cache`, `blob_storage`
 
-**Other:**
-- `.DS_Store` (macOS)
+**macOS:** `.DS_Store`
 
-Use `-n all` to show everything, or `-n PATTERN` to show specific folders.
-
----
-
-## Features
-
-- **Color-coded output**: Directories in blue, executables in green
-- **File counts**: Shows how many files are being hidden
-- **Git integration**: Filter to only git-tracked files
-- **Size awareness**: Skip folders over a certain size
-- **Configurable**: Save your ignore patterns permanently
-- **Fast search**: Find files with pattern matching
-- **Flexible output**: Tree or flat format
+Use `-n all` to show everything, or `-n PATTERN` to peek at one specific folder.
 
 ---
 
 ## Real-World Examples
 
-**Check project structure without clutter:**
 ```bash
-cd ~/myproject
-struct 3
-```
+# Check project structure without clutter
+struct 3 ~/myproject
 
-**Find all config files:**
-```bash
+# Find all config files in current dir
 struct search "*.env"
-struct search "config*" -d 2
-```
+struct search "config" . 2
 
-**See what's actually tracked in git:**
-```bash
+# See what's actually tracked in git
 struct 2 -g
-```
 
-**Peek inside an ignored folder:**
-```bash
-struct 2 -n venv
-struct 1 -n node_modules
-```
+# Peek inside an ignored folder
+struct -n venv
+struct -n node_modules
 
-**Find large folders:**
-```bash
-struct 2 -z                     # Show all sizes
-struct 3 -s 100                 # Skip folders > 100MB
-```
+# Find large folders
+struct -z                       # Show all sizes
+struct -s 100                   # Skip folders > 100MB
 
-**Search with flat output for grep/scripting:**
-```bash
+# Search with flat output for piping
 struct search "*.py" -f | grep test
+
+# Find __pycache__ dirs across your project
+struct search "__pycache__" ~/dir -f
+
+# Git: see what you're about to commit
+struct --gsr                    # Staged files from repo root
 ```
 
 ---
-### Drop in a star if you liked this repo! It helps me make it real!
+
+## Features
+
+- **Clean by default**: hides noise (venv, node_modules, .git, caches, build artifacts)
+- **Smart search**: substring match for plain text, glob match for patterns with wildcards
+- **Git integration**: filter to tracked / untracked / staged / changed files
+- **Size awareness**: show sizes with `-z`, skip large dirs with `-s`
+- **Configurable ignores**: save patterns permanently with `struct add`
+- **Flexible output**: tree or flat format for search
+- **Color-coded**: directories in blue, executables in green
+- **Fast**: written in Rust
+
+---
 
 ## Why Rust
 
-This started as a learning project to get hands-on with Rust. Turned out to be genuinely useful, so I polished it up. The performance is a nice bonus.
+Started as a learning project. Turned out to be genuinely useful, so it got polished up. The performance is a nice bonus.
 
 ## Contributing
 
 Found a bug? Want a feature? Open an issue. PRs welcome.
 
+Drop a star if you find it useful — it helps!
+
 ## License
 
-MIT - feel free to do whatever you want with it!
+MIT
